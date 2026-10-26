@@ -1,0 +1,79 @@
+%PDF-1.7
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R /AcroForm 4 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Annots [6 0 R 7 0 R 9 0 R 10 0 R 11 0 R 12 0 R] /Contents 15 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Fields [6 0 R 7 0 R 8 0 R 11 0 R 12 0 R] /DR << /Font << /Helv 5 0 R >> >> /DA (/Helv 0 Tf 0 g) /NeedAppearances true >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+6 0 obj
+<< /Type /Annot /Subtype /Widget /FT /Tx /T (name) /V (Jean Dupont) /Rect [100 700 300 720] /P 3 0 R /DA (/Helv 12 Tf 0 0 1 rg) /MK << /BC [0] >> /F 4 >>
+endobj
+7 0 obj
+<< /Type /Annot /Subtype /Widget /FT /Btn /T (agree) /V /Off /AS /Off /Rect [100 660 120 680] /P 3 0 R /AP << /N << /Oui 13 0 R /Off 14 0 R >> >> /F 4 >>
+endobj
+8 0 obj
+<< /FT /Btn /Ff 49152 /T (size) /V /M /Kids [9 0 R 10 0 R] >>
+endobj
+9 0 obj
+<< /Type /Annot /Subtype /Widget /Parent 8 0 R /Rect [100 620 120 640] /P 3 0 R /AS /Off /AP << /N << /S 13 0 R /Off 14 0 R >> >> /F 4 >>
+endobj
+10 0 obj
+<< /Type /Annot /Subtype /Widget /Parent 8 0 R /Rect [140 620 160 640] /P 3 0 R /AS /M /AP << /N << /M 13 0 R /Off 14 0 R >> >> /F 4 >>
+endobj
+11 0 obj
+<< /Type /Annot /Subtype /Widget /FT /Ch /Ff 131072 /T (country) /V (FR) /Opt [[(FR) (France)] [(BE) (Belgique)] [(CH) (Suisse)]] /Rect [100 580 300 600] /P 3 0 R /DA (/Helv 10 Tf 0 g) /F 4 >>
+endobj
+12 0 obj
+<< /Type /Annot /Subtype /Widget /FT /Ch /T (lang) /V (fr) /Opt [(en) (fr) (de)] /Rect [100 500 200 560] /P 3 0 R /DA (/Helv 10 Tf 0 g) /F 4 >>
+endobj
+13 0 obj
+<< /Type /XObject /Subtype /Form /BBox [0 0 20 20] /Length 23 >>
+stream
+0 0 1 rg 4 4 12 12 re f
+endstream
+endobj
+14 0 obj
+<< /Type /XObject /Subtype /Form /BBox [0 0 20 20] /Length 0 >>
+stream
+
+endstream
+endobj
+15 0 obj
+<< /Length 77 >>
+stream
+BT /F1 10 Tf 30 705 Td (Name:) Tj 0 -40 Td (Agree:) Tj 0 -40 Td (Size:) Tj ET
+endstream
+endobj
+xref
+0 16
+0000000000 65535 f 
+0000000015 00000 n 
+0000000080 00000 n 
+0000000137 00000 n 
+0000000313 00000 n 
+0000000453 00000 n 
+0000000550 00000 n 
+0000000719 00000 n 
+0000000888 00000 n 
+0000000965 00000 n 
+0000001118 00000 n 
+0000001270 00000 n 
+0000001479 00000 n 
+0000001639 00000 n 
+0000001761 00000 n 
+0000001859 00000 n 
+trailer
+<< /Size 16 /Root 1 0 R >>
+startxref
+1987
+%%EOF

@@ -1,0 +1,119 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    # Native runners for each architecture: the addon is built AND tested on its own CPU,
+    # inside the same Containerfile as local development (podman).
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    name: linux-${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure podman
+        run: command -v podman || (sudo apt-get update && sudo apt-get install -y podman)
+
+      - name: Build (Rust addon + TypeScript) in the test image
+        run: podman build --target test -t pdfnet-ci -f Containerfile .
+
+      - name: Start Gotenberg (Office/HTML conversion service)
+        run: |
+          podman network create pdfnet
+          podman run -d --name pdfnet-gotenberg --network pdfnet docker.io/gotenberg/gotenberg:8.37.0
+          for i in $(seq 1 60); do
+            podman run --rm --network pdfnet pdfnet-ci node -e "fetch('http://pdfnet-gotenberg:3000/health').then(r => process.exit(r.ok ? 0 : 1), () => process.exit(1))" && break
+            sleep 2
+          done
+
+      - name: Test (including Office/HTML conversions)
+        run: podman run --rm --network pdfnet -e GOTENBERG_URL=http://pdfnet-gotenberg:3000 pdfnet-ci npm test
+
+      - name: Extract artifacts
+        run: |
+          id=$(podman create pdfnet-ci)
+          mkdir -p artifacts
+          podman cp "$id:/app/native/pdfmatrix.linux-${{ matrix.arch }}-gnu.node" artifacts/
+          if [ "${{ matrix.arch }}" = "x64" ]; then
+            podman cp "$id:/app/dist" artifacts/dist
+            podman cp "$id:/app/native/index.cjs" artifacts/
+            podman cp "$id:/app/native/index.d.cts" artifacts/
+          fi
+          podman rm "$id"
+          ls -la artifacts
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-${{ matrix.arch }}
+          path: artifacts/
+          if-no-files-found: error
+
+  package:
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://npm.pkg.github.com
+          scope: "@feiltom"
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: downloaded
+
+      - name: Assemble the npm package (both architectures)
+        run: |
+          cp downloaded/linux-x64/*.node downloaded/linux-arm64/*.node native/
+          cp downloaded/linux-x64/index.cjs downloaded/linux-x64/index.d.cts native/
+          cp -r downloaded/linux-x64/dist dist
+          ls -la native dist
+          npm pack
+          ls -la *.tgz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: npm-package
+          path: '*.tgz'
+          if-no-files-found: error
+
+      - name: GitHub release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" --generate-notes \
+            *.tgz native/pdfmatrix.linux-x64-gnu.node native/pdfmatrix.linux-arm64-gnu.node
+
+      - name: Publish to GitHub Packages (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [ "v$version" != "${GITHUB_REF_NAME}" ]; then
+            echo "Tag ${GITHUB_REF_NAME} does not match package.json version $version" >&2
+            exit 1
+          fi
+          npm publish *.tgz

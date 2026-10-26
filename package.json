@@ -1,0 +1,58 @@
+{
+  "name": "@feiltom/pdfmatrix",
+  "version": "0.1.0",
+  "description": "PDFMatrix: open-source, PDFNet-compatible PDF SDK for Node.js with a Rust core",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/feiltom/PDFMatrix.git"
+  },
+  "homepage": "https://github.com/feiltom/PDFMatrix#readme",
+  "bugs": {
+    "url": "https://github.com/feiltom/PDFMatrix/issues"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "native/index.cjs",
+    "native/index.d.cts",
+    "native/*.node"
+  ],
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "build:native": "napi build --platform --release --manifest-path native/Cargo.toml --output-dir native --js index.cjs --dts index.d.cts",
+    "build:native:x64": "napi build --platform --release --manifest-path native/Cargo.toml --output-dir native --js index.cjs --dts index.d.cts --target x86_64-unknown-linux-gnu --use-napi-cross",
+    "build:native:arm64": "napi build --platform --release --manifest-path native/Cargo.toml --output-dir native --js index.cjs --dts index.d.cts --target aarch64-unknown-linux-gnu --use-napi-cross",
+    "build:ts": "tsc -p tsconfig.json",
+    "build": "npm run build:native && npm run build:ts",
+    "build:all": "npm run build:native:x64 && npm run build:native:arm64 && npm run build:ts",
+    "test": "node --test \"test/**/*.test.mjs\" && npm run test:types",
+    "example": "node examples/run-all.mjs",
+    "test:types": "tsc -p test/types/tsconfig.json"
+  },
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@napi-rs/cli": "^3.10.9",
+    "@types/node": "^22.19.0",
+    "typescript": "^5.9.3"
+  },
+  "napi": {
+    "binaryName": "pdfmatrix",
+    "targets": [
+      "x86_64-unknown-linux-gnu",
+      "aarch64-unknown-linux-gnu"
+    ]
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
+}

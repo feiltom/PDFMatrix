@@ -1,0 +1,10 @@
+node_modules
+dist
+out
+target
+.tmp
+native/*.node
+native/index.cjs
+native/index.d.cts
+*.tgz
+.DS_Store

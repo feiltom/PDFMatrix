@@ -1,0 +1,20 @@
+# Example deployment: your application + the Gotenberg conversion service.
+#   podman compose up        (or: podman-compose up)
+# Office/HTML → PDF conversions (PDFNet.Convert, PDFNet.HTML2PDF) are sent to $GOTENBERG_URL.
+services:
+  gotenberg:
+    image: docker.io/gotenberg/gotenberg:8.37.0
+    restart: unless-stopped
+    # Not exposed publicly: only the application talks to it.
+    expose:
+      - "3000"
+
+  app:
+    build:
+      context: .
+      target: test
+    environment:
+      GOTENBERG_URL: http://gotenberg:3000
+    depends_on:
+      - gotenberg
+    command: ["npm", "test"]
