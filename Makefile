@@ -13,7 +13,7 @@ GOTENBERG     ?= pdfnet-gotenberg
 RUN_NET        = podman run --rm --network $(NETWORK) -e GOTENBERG_URL=http://$(GOTENBERG):3000 -v $(CURDIR):/app:Z $(VOLUMES) -w /app $(DEV_IMAGE)
 TEST_ON    = podman run --rm -v $(CURDIR):/app:Z -w /app --platform
 
-.PHONY: dev-image install build build-amd64 build-arm64 build-all test test-amd64 test-arm64 examples shell image clean gotenberg gotenberg-stop test-all
+.PHONY: dev-image install build build-amd64 build-arm64 build-all test test-amd64 test-arm64 examples shell image clean gotenberg gotenberg-stop test-all test-musl
 
 dev-image:
 	podman build --platform linux/$$(podman info --format "{{.Host.Arch}}") --target dev -t $(DEV_IMAGE) -f Containerfile .
@@ -71,3 +71,9 @@ gotenberg-stop:
 # Full suite including Office/HTML conversion tests.
 test-all: gotenberg
 	$(RUN_NET) sh -c 'npm run build:ts && npm test'
+
+# Alpine / musl: builds and tests the linux-<arch>-musl addon in its own image
+# (for the VM's architecture; CI builds both x64 and arm64 on native runners).
+test-musl:
+	podman build --target test-musl -t localhost/pdfmatrix-musl-test -f Containerfile .
+	podman run --rm localhost/pdfmatrix-musl-test npm test

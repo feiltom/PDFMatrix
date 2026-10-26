@@ -18,12 +18,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - arch: x64
-            runner: ubuntu-24.04
-          - arch: arm64
-            runner: ubuntu-24.04-arm
+          - { arch: x64, libc: gnu, runner: ubuntu-24.04, target: test }
+          - { arch: arm64, libc: gnu, runner: ubuntu-24.04-arm, target: test }
+          - { arch: x64, libc: musl, runner: ubuntu-24.04, target: test-musl }
+          - { arch: arm64, libc: musl, runner: ubuntu-24.04-arm, target: test-musl }
     runs-on: ${{ matrix.runner }}
-    name: linux-${{ matrix.arch }}
+    name: linux-${{ matrix.arch }}-${{ matrix.libc }}
     steps:
       - uses: actions/checkout@v4
 
@@ -31,7 +31,7 @@ jobs:
         run: command -v podman || (sudo apt-get update && sudo apt-get install -y podman)
 
       - name: Build (Rust addon + TypeScript) in the test image
-        run: podman build --target test -t pdfnet-ci -f Containerfile .
+        run: podman build --target ${{ matrix.target }} -t pdfnet-ci -f Containerfile .
 
       - name: Start Gotenberg (Office/HTML conversion service)
         run: |
@@ -49,8 +49,8 @@ jobs:
         run: |
           id=$(podman create pdfnet-ci)
           mkdir -p artifacts
-          podman cp "$id:/app/native/pdfmatrix.linux-${{ matrix.arch }}-gnu.node" artifacts/
-          if [ "${{ matrix.arch }}" = "x64" ]; then
+          podman cp "$id:/app/native/pdfmatrix.linux-${{ matrix.arch }}-${{ matrix.libc }}.node" artifacts/
+          if [ "${{ matrix.arch }}-${{ matrix.libc }}" = "x64-gnu" ]; then
             podman cp "$id:/app/dist" artifacts/dist
             podman cp "$id:/app/native/index.cjs" artifacts/
             podman cp "$id:/app/native/index.d.cts" artifacts/
@@ -60,7 +60,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: linux-${{ matrix.arch }}
+          name: linux-${{ matrix.arch }}-${{ matrix.libc }}
           path: artifacts/
           if-no-files-found: error
 
@@ -85,9 +85,9 @@ jobs:
 
       - name: Assemble the npm package (both architectures)
         run: |
-          cp downloaded/linux-x64/*.node downloaded/linux-arm64/*.node native/
-          cp downloaded/linux-x64/index.cjs downloaded/linux-x64/index.d.cts native/
-          cp -r downloaded/linux-x64/dist dist
+          cp downloaded/linux-*/*.node native/
+          cp downloaded/linux-x64-gnu/index.cjs downloaded/linux-x64-gnu/index.d.cts native/
+          cp -r downloaded/linux-x64-gnu/dist dist
           ls -la native dist
           npm pack
           ls -la *.tgz
@@ -104,7 +104,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "${GITHUB_REF_NAME}" --generate-notes \
-            *.tgz native/pdfmatrix.linux-x64-gnu.node native/pdfmatrix.linux-arm64-gnu.node
+            *.tgz native/pdfmatrix.linux-*.node
 
       - name: Publish to GitHub Packages (tags only)
         if: startsWith(github.ref, 'refs/tags/v')

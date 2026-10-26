@@ -9,7 +9,7 @@ to Node through napi-rs.
 - No C/C++ code in the project: the core is Rust (`lopdf`, `hayro`, `ttf-parser`, `regex`, `image`).
 - Permissive licenses only (MIT / Apache-2.0); no AGPL dependency.
 - No license key: `PDFNet.runWithCleanup(main, key)` accepts the key and ignores it.
-- Prebuilt binaries: **linux-x64** and **linux-arm64** (glibc).
+- Prebuilt binaries: **linux-x64** and **linux-arm64**, glibc (Debian, Ubuntu…) and musl (Alpine).
 
 ```js
 import { PDFNet } from '@feiltom/pdfmatrix';
@@ -43,6 +43,7 @@ make test          # node:test suite
 make test-all      # suite + Office/HTML conversions (starts Gotenberg)
 make test-amd64    # suite against the x64 binary (emulated on an ARM Mac)
 make test-arm64    # suite against the arm64 binary
+make test-musl     # build + tests on Alpine (musl)
 make examples      # examples/run-all.mjs -> ./out
 make shell         # interactive shell in the container
 make image         # self-contained image: build + tests (what the CI runs)
@@ -221,7 +222,7 @@ are not supported (put the tags in the same row, or in separate paragraphs/rows)
 
 ```json
 "dependencies": {
-  "@feiltom/pdfmatrix": "https://github.com/feiltom/PDFMatrix/releases/download/v0.1.0/feiltom-pdfmatrix-0.1.0.tgz"
+  "@feiltom/pdfmatrix": "https://github.com/feiltom/PDFMatrix/releases/download/v0.1.1/feiltom-pdfmatrix-0.1.1.tgz"
 }
 ```
 
@@ -245,7 +246,7 @@ and the binaries) and publishes to GitHub Packages (CI job `package`).
 Without changing any code, by aliasing the package name:
 
 ```json
-"dependencies": { "@pdftron/pdfnet-node": "https://github.com/feiltom/PDFMatrix/releases/download/v0.1.0/feiltom-pdfmatrix-0.1.0.tgz" }
+"dependencies": { "@pdftron/pdfnet-node": "https://github.com/feiltom/PDFMatrix/releases/download/v0.1.1/feiltom-pdfmatrix-0.1.1.tgz" }
 ```
 
 Validated on a real API project (Fastify, TypeScript 6, CommonJS): `tsc` without errors and

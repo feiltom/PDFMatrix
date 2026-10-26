@@ -1,6 +1,6 @@
 {
   "name": "@feiltom/pdfmatrix",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "PDFMatrix: open-source, PDFNet-compatible PDF SDK for Node.js with a Rust core",
   "repository": {
     "type": "git",
@@ -49,7 +49,9 @@
     "binaryName": "pdfmatrix",
     "targets": [
       "x86_64-unknown-linux-gnu",
-      "aarch64-unknown-linux-gnu"
+      "aarch64-unknown-linux-gnu",
+      "x86_64-unknown-linux-musl",
+      "aarch64-unknown-linux-musl"
     ]
   },
   "publishConfig": {
