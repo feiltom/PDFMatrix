@@ -214,23 +214,38 @@ are not supported (put the tags in the same row, or in separate paragraphs/rows)
 | `PDFNet.PDFDoc`, `PDFNet.Page`, `PDFNet.Optimizer.ImageSettings`… as **TypeScript types** | yes, as with pdfnet-node |
 | `runWithCleanup(fn, license, { persistentCachePath })`, `destroy()` on every object | accepted (no-op) |
 
-## Installation (GitHub Packages)
+## Installation
+
+**Without a token (recommended)**: from the `.tgz` attached to each
+[GitHub release](https://github.com/feiltom/PDFMatrix/releases):
+
+```json
+"dependencies": {
+  "@feiltom/pdfmatrix": "https://github.com/feiltom/PDFMatrix/releases/download/v0.1.0/feiltom-pdfmatrix-0.1.0.tgz"
+}
+```
+
+`npm ci` works as usual (the checksum is recorded in `package-lock.json`). To upgrade, change
+the version in the URL.
+
+**GitHub Packages** (requires a token with `read:packages`, even for a public package):
 
 ```sh
 # .npmrc of the consuming project
 @feiltom:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}   # token with read:packages
+//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
 npm install @feiltom/pdfmatrix
 ```
 
-A `v*` tag whose version matches `package.json` publishes the package (CI job `package`).
+A `v*` tag whose version matches `package.json` creates the GitHub release (with the `.tgz`
+and the binaries) and publishes to GitHub Packages (CI job `package`).
 
 ## Migrating from `@pdftron/pdfnet-node`
 
 Without changing any code, by aliasing the package name:
 
 ```json
-"dependencies": { "@pdftron/pdfnet-node": "npm:@feiltom/pdfmatrix@^0.1.0" }
+"dependencies": { "@pdftron/pdfnet-node": "https://github.com/feiltom/PDFMatrix/releases/download/v0.1.0/feiltom-pdfmatrix-0.1.0.tgz" }
 ```
 
 Validated on a real API project (Fastify, TypeScript 6, CommonJS): `tsc` without errors and
