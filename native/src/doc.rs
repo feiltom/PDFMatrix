@@ -17,7 +17,7 @@ pub fn err<E: std::fmt::Display>(context: &str) -> impl FnOnce(E) -> String + '_
 }
 
 /// Page attributes that may be inherited from ancestor /Pages nodes (ISO 32000-1 §7.7.3.4).
-const INHERITABLE: [&[u8]; 4] = [b"Resources", b"MediaBox", b"CropBox", b"Rotate"];
+pub(crate) const INHERITABLE: [&[u8]; 4] = [b"Resources", b"MediaBox", b"CropBox", b"Rotate"];
 
 /// US Letter, the default MediaBox used by most processors when none is present.
 const DEFAULT_MEDIA_BOX: [f64; 4] = [0.0, 0.0, 612.0, 792.0];
@@ -62,6 +62,8 @@ pub struct SaveOpts {
     pub object_streams: bool,
     /// Append changes to the original bytes (required to keep existing signatures valid).
     pub incremental: bool,
+    /// Linearized output ("fast web view", ISO 32000-1 Annex F).
+    pub linearize: bool,
 }
 
 pub struct Doc {
@@ -545,6 +547,8 @@ impl Doc {
     pub fn save(&mut self, opts: SaveOpts) -> Res<Vec<u8>> {
         self.finalize_fonts();
         let pending = self.pending_signature.take();
+        // Checked before `prepare`, which adds the new signature.
+        let signed_before = pending.is_some() && crate::sign::has_signatures(&self.inner);
         if let Some(p) = &pending
             && let Err(e) = crate::sign::prepare(self, p)
         {
@@ -552,10 +556,7 @@ impl Doc {
             return Err(e);
         }
         // Signing a document that already has signatures must not invalidate them.
-        let incremental = opts.incremental
-            || (pending.is_some()
-                && self.original.is_some()
-                && crate::sign::has_signatures(&self.inner));
+        let incremental = opts.incremental || (signed_before && self.original.is_some());
         let result = if incremental {
             self.save_incremental()
         } else {
@@ -595,6 +596,15 @@ impl Doc {
                 Some(security::state_for(&self.inner, p)?)
             }
         };
+        if opts.linearize
+            && let Some(out) = crate::linearize::linearize(&self.inner, state.as_ref())?
+        {
+            if let (Security::Set(_), Some(state)) = (&self.security, state) {
+                self.inner.encryption_state = Some(state);
+                self.security = Security::Keep;
+            }
+            return Ok(out);
+        }
         let mut out = Vec::new();
         match state {
             None => {
@@ -608,6 +618,10 @@ impl Doc {
                 let mut copy = self.inner.clone();
                 copy.encryption_state = None;
                 copy.encrypt(&state).map_err(err("cannot encrypt PDF"))?;
+                if let Ok(id) = copy.trailer.get(b"Encrypt").and_then(Object::as_reference) {
+                    let dict = security::encrypt_dict(&state)?;
+                    copy.objects.insert(id, Object::Dictionary(dict));
+                }
                 copy.save_with_options(&mut out, options)
                     .map_err(err("cannot save PDF"))?;
                 if let Security::Set(_) = self.security {

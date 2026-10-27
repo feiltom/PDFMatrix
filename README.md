@@ -114,7 +114,7 @@ list boxes with the selection shown, check marks and radio buttons.
 | PDFNet class | Implemented |
 |---|---|
 | `SecurityHandler` | `createDefault` (AES-256), `create(AlgorithmType)`: RC4-40, RC4-128, AES-128, AES-256 (R2/R3/R4/R6); user/owner passwords, `setPermission/getPermission`, `getKeyLength`, `getEncryptionAlgorithmID`, `isAES/isRC4` |
-| `PDFDoc` | `setSecurityHandler`, `getSecurityHandler`, `removeSecurity` (encryption is **kept** by default when re-saving an encrypted document), **incremental save** `SDFDoc.SaveOptions.e_incremental` (encrypted documents included) |
+| `PDFDoc` | `setSecurityHandler`, `getSecurityHandler`, `removeSecurity` (encryption is **kept** by default when re-saving an encrypted document), **incremental save** `SDFDoc.SaveOptions.e_incremental` (encrypted documents included), **linearized save** `e_linearized` (fast web view with hint tables, encryption and signing included; written without object streams) |
 | Signatures | `createDigitalSignatureField`, `SignatureWidget.createWithDigitalSignatureField`, `DigitalSignatureField` (`signOnNextSave` / `FromBuffer` from PKCS#12, `setReason/Location/ContactInfo`, `setSubFilter` adbe.pkcs7.detached or ETSI.CAdES.detached, getters, `verify`), `getDigitalSignatureFieldIterator`, `verifySignedDigitalSignatures` |
 | Verification | `VerificationOptions` (trusted certificates DER/PEM, `enableTrustVerification`), `VerificationResult` (document / digest / trust / modification statuses, algorithm, embedded certificates) |
 | Redaction | `Redactor.redact` + `redactionCreate` (overlay color, border, overlay text, negative mode), `RedactionAnnot` + `PDFDoc.applyRedactions()` |
@@ -222,7 +222,7 @@ are not supported (put the tags in the same row, or in separate paragraphs/rows)
 
 ```json
 "dependencies": {
-  "@feiltom/pdfmatrix": "https://github.com/feiltom/PDFMatrix/releases/download/v0.1.1/feiltom-pdfmatrix-0.1.1.tgz"
+  "@feiltom/pdfmatrix": "https://github.com/feiltom/PDFMatrix/releases/download/v0.1.2/feiltom-pdfmatrix-0.1.2.tgz"
 }
 ```
 
@@ -246,7 +246,7 @@ and the binaries) and publishes to GitHub Packages (CI job `package`).
 Without changing any code, by aliasing the package name:
 
 ```json
-"dependencies": { "@pdftron/pdfnet-node": "https://github.com/feiltom/PDFMatrix/releases/download/v0.1.1/feiltom-pdfmatrix-0.1.1.tgz" }
+"dependencies": { "@pdftron/pdfnet-node": "https://github.com/feiltom/PDFMatrix/releases/download/v0.1.2/feiltom-pdfmatrix-0.1.2.tgz" }
 ```
 
 Validated on a real API project (Fastify, TypeScript 6, CommonJS): `tsc` without errors and
@@ -256,7 +256,6 @@ ignored and Gotenberg must be reachable (`GOTENBERG_URL`) for Office/HTML conver
 
 ## Known limitations
 
-- `e_linearized` accepted but ignored (no linearization).
 - Signatures: no RFC 3161 timestamp, no LTV (OCSP/CRL), no revocation or validity-period check during verification; changes made after a signature are reported as `e_has_allowed_changes` without analysis (no DocMDP). Signing an **encrypted** document is not supported yet.
 - Redaction: vector paths only partially covered stay in place (hidden by the overlay), shadings are not touched, Type3 fonts and non-Identity CMaps use approximate metrics; JBIG2/CCITT/16-bit images are removed entirely as soon as they are touched.
 - A form field with a single widget is written merged (field + widget in one dictionary), like Acrobat/PDFNet; it is split automatically when a second widget is added.

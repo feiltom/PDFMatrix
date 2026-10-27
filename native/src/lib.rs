@@ -9,6 +9,7 @@ mod docgen;
 mod fonts;
 mod forms;
 mod image;
+mod linearize;
 mod optimize;
 mod redact;
 mod render;
@@ -69,6 +70,7 @@ pub struct SaveOptions {
     pub compress: Option<bool>,
     pub object_streams: Option<bool>,
     pub incremental: Option<bool>,
+    pub linearize: Option<bool>,
 }
 
 #[napi(object)]
@@ -319,6 +321,7 @@ impl NativeDoc {
             compress: o.compress.unwrap_or(false),
             object_streams: o.object_streams.unwrap_or(false),
             incremental: o.incremental.unwrap_or(false),
+            linearize: o.linearize.unwrap_or(false),
         };
         self.doc.save(opts).map(Buffer::from).map_err(to_napi)
     }

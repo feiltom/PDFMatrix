@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use lopdf::encryption::crypt_filters::{Aes128CryptFilter, Aes256CryptFilter, CryptFilter};
-use lopdf::{Document, EncryptionState, EncryptionVersion, Object, Permissions, StringFormat};
+use lopdf::{Dictionary, Document, EncryptionState, EncryptionVersion, Object, Permissions, StringFormat};
 
 use crate::doc::Res;
 
@@ -102,6 +102,29 @@ pub fn state_for(doc: &Document, p: &SecurityParams) -> Res<EncryptionState> {
         other => return Err(format!("unsupported encryption algorithm {other}")),
     };
     EncryptionState::try_from(version).map_err(|e| format!("cannot set up encryption: {e}"))
+}
+
+/// The /Encrypt dictionary for `state`. lopdf leaves out the key length of AES-256 handlers,
+/// which poppler then reads as a 40-bit key: write it as Acrobat does.
+pub fn encrypt_dict(state: &EncryptionState) -> Res<Dictionary> {
+    let mut dict = state
+        .encode()
+        .map_err(|e| format!("cannot encrypt PDF: {e}"))?;
+    if dict.get(b"V").and_then(Object::as_i64).ok() == Some(5) {
+        if !dict.has(b"Length") {
+            dict.set("Length", Object::Integer(256));
+        }
+        if let Ok(Object::Dictionary(filters)) = dict.get_mut(b"CF") {
+            for (_, filter) in filters.iter_mut() {
+                if let Object::Dictionary(f) = filter
+                    && !f.has(b"Length")
+                {
+                    f.set("Length", Object::Integer(32));
+                }
+            }
+        }
+    }
+    Ok(dict)
 }
 
 pub struct SecurityInfo {

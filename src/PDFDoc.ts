@@ -346,6 +346,7 @@ export class PDFDoc {
         removeUnused: (flags & O.e_remove_unused) !== 0,
         objectStreams: (flags & O.e_compatibility) === 0 && (flags & O.e_linearized) === 0,
         incremental: (flags & O.e_incremental) !== 0,
+        linearize: (flags & O.e_linearized) !== 0,
       }),
     );
     this.#modified = false;
